@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="음악을 실시간 분석해 AR 글라스 위에 빛, 파동, 입자로 그려 주는 길거리 음악 시각화 서비스 콘셉트와 체험 데모">
+<style>html,body{margin:0}img{max-width:100%}</style>
+<title>OnBeat 온비트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
+<style>
+/* Layout: centered glass hero with an eclipse of light and a cropped giant wordmark, then the live stage,
+   then short glass-card sections; one periwinkle band breaks the rhythm. Single deep-navy look by choice. */
+:root{
+  color-scheme: dark;
+  --bg:#040817;
+  --bg2:#081333;
+  --glass:rgba(150,178,255,.07);
+  --glass-2:rgba(150,178,255,.12);
+  --edge:rgba(178,200,255,.2);
+  --edge-2:rgba(200,218,255,.38);
+  --fg:#eef3ff;
+  --muted:#93a6d4;
+  --blue:#7ea6ff;
+  --ice:#d3e2ff;
+  --deep:#1b3a8f;
+  --peri:#9cb7f5;
+  --navy-ink:#07112e;
+  --sans:"Manrope","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --kr:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.7;word-break:keep-all;overflow-wrap:break-word;
+  background-image:radial-gradient(1200px 700px at 50% -10%, rgba(60,100,220,.22), transparent 70%);}
+.wrap{max-width:1160px;margin:0 auto;padding-inline:20px;padding-block:16px 64px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
+p{margin:0}
+
+/* glass primitive */
+.glass{background:linear-gradient(160deg, rgba(160,188,255,.12), rgba(120,150,255,.03) 60%);border:1px solid var(--edge);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+
+.pill{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border-radius:999px;font-size:12px;letter-spacing:.02em;color:var(--ice);
+  background:var(--glass-2);border:1px solid var(--edge)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ice);box-shadow:0 0 8px var(--blue)}
+
+/* nav */
+.nav{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 12px);z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:10px 12px 10px 20px;border-radius:999px;margin-bottom:18px}
+.logo{font-weight:500;font-size:17px;letter-spacing:.14em}
+.logo span{color:var(--blue);font-weight:300}
+.nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.nav a{display:block;padding:6px 12px;border-radius:999px;color:var(--muted);text-decoration:none;font-size:13px}
+.nav a:hover{color:var(--fg);background:var(--glass-2)}
+@media (max-width:720px){.nav ul{display:none}}
+
+/* hero */
+.hero{position:relative;border-radius:28px;overflow:hidden;border:1px solid var(--edge);
+  background:radial-gradient(90% 70% at 50% 100%, #2a4fc0 0%, #10235f 35%, #060c24 70%);
+  padding:clamp(56px,9vw,110px) 24px 0;text-align:center;isolation:isolate}
+.eclipse{position:absolute;left:50%;top:-58%;width:min(1150px,150%);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;z-index:-1;
+  background:radial-gradient(circle at 50% 50%, #040817 66%, #0a1640 70.5%, rgba(10,22,64,0) 71%);
+  box-shadow:0 40px 120px rgba(110,150,255,.45), 0 14px 40px rgba(210,225,255,.35), inset 0 -2px 0 rgba(225,235,255,.75)}
+.hero .pill{margin-bottom:22px}
+h1{font-weight:300;font-size:clamp(2.2rem,5.6vw,4.4rem);line-height:1.18;letter-spacing:-.02em;margin:0 auto;max-width:14em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--blue)}
+.lede{margin:22px auto 0;max-width:36em;color:var(--muted);font-size:1.02rem;font-weight:300}
+.lede strong{color:var(--ice);font-weight:400}
+.hero-cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.btn-ice{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;background:var(--ice);color:var(--navy-ink);font-weight:600;font-size:14px;text-decoration:none;border:0;cursor:pointer}
+.btn-ghost{display:inline-flex;align-items:center;padding:11px 22px;border-radius:999px;color:var(--fg);font-size:14px;text-decoration:none;border:1px solid var(--edge-2)}
+.wordmark{display:block;margin-top:clamp(28px,5vw,56px);font-weight:300;font-size:clamp(5rem,21vw,17rem);line-height:.74;letter-spacing:-.05em;
+  background:linear-gradient(180deg, rgba(225,235,255,.92) 10%, rgba(140,170,255,.25) 80%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  user-select:none;white-space:nowrap;transform:translateY(12%)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.stat{border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat b{font-weight:300;font-size:clamp(2.2rem,4vw,3rem);line-height:1.05;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+
+/* demo */
+.demo{margin-top:72px}
+.demo-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px;margin-bottom:20px}
+.demo-head p{color:var(--muted);max-width:32em;font-size:15px}
+.stage-wrap{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;border-radius:24px;overflow:hidden;background:#030615;border:1px solid var(--edge);
+  box-shadow:0 30px 80px rgba(40,80,200,.25)}
+@media (max-width:640px){.stage-wrap{aspect-ratio:4/5}}
+#stage{display:block;width:100%;height:100%}
+.big-play{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:rgba(211,226,255,.92);color:var(--navy-ink);border:1px solid rgba(255,255,255,.7);border-radius:999px;padding:13px 28px;font:600 16px/1.3 var(--sans);cursor:pointer;
+  box-shadow:0 0 0 8px rgba(160,190,255,.12),0 0 50px rgba(126,166,255,.6);white-space:nowrap;backdrop-filter:blur(8px)}
+.big-play small{font-size:12px;font-weight:400;opacity:.7}
+.big-play:hover{background:#fff}
+
+.controls{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-start;margin-top:14px;padding:18px 20px;border-radius:20px}
+.group{display:flex;flex-direction:column;gap:9px;min-width:0}
+.glabel{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--edge);background:var(--glass);color:var(--fg);padding:8px 15px;border-radius:999px;font:400 14px/1.2 var(--sans);cursor:pointer;display:inline-flex;gap:8px;align-items:baseline}
+.chip:hover{border-color:var(--edge-2)}
+.chip i{font-style:normal;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ice);border-color:var(--ice);color:var(--navy-ink);font-weight:500}
+.chip[aria-pressed="true"] i{color:var(--navy-ink);opacity:.6}
+.chip.file{border-style:dashed}
+.chip.file:focus-within{outline:2px solid var(--ice);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--edge);border-radius:999px;padding:3px;background:var(--glass)}
+.seg label{position:relative;padding:6px 14px;border-radius:999px;font:400 14px/1.2 var(--sans);cursor:pointer;color:var(--muted)}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg label:has(input:checked){background:var(--ice);color:var(--navy-ink);font-weight:500}
+.seg label:has(input:focus-visible){outline:2px solid var(--ice);outline-offset:1px}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.btn{appearance:none;border:1px solid var(--edge-2);background:transparent;color:var(--fg);padding:8px 20px;border-radius:999px;font:500 14px/1.2 var(--sans);cursor:pointer}
+.btn:hover{background:var(--glass-2)}
+.check{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);cursor:pointer}
+.check input{accent-color:var(--blue);width:16px;height:16px}
+.status{font-size:13px;color:var(--ice);min-height:1.2em;margin-top:10px}
+.demo-note{font-size:13px;color:var(--muted);margin-top:4px}
+
+/* sections */
+section{padding-block:96px 0}
+.sec-head{display:flex;flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:32px}
+h2{font-weight:300;font-size:clamp(1.8rem,3.8vw,2.8rem);line-height:1.25;letter-spacing:-.02em;margin:0;text-wrap:balance;max-width:20em}
+h2 em{font-style:normal;color:var(--blue)}
+h3{font-size:1.05rem;font-weight:500;margin:0 0 6px;line-height:1.45}
+
+.card{border-radius:20px;padding:24px;min-width:0;position:relative;overflow:hidden}
+.card::after{content:"";position:absolute;inset:auto -30% -60% auto;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, rgba(110,150,255,.22), transparent 65%);pointer-events:none}
+
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.why p{color:var(--muted);font-size:15px;font-weight:300}
+.why .k{display:block;font-size:12px;color:var(--blue);margin-bottom:18px;letter-spacing:.08em}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;list-style:none;padding:0;margin:0;position:relative}
+.steps li{display:flex;flex-direction:column;gap:8px}
+.steps .n{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ice);letter-spacing:.08em}
+.steps .n b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--edge-2);font-weight:500;font-size:12px;background:var(--glass-2)}
+.steps p{color:var(--muted);font-size:15px;font-weight:300}
+
+.tbl{overflow-x:auto;border-radius:20px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:15px}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:400;padding:16px 20px;border-bottom:1px solid var(--edge)}
+td{padding:16px 20px;border-bottom:1px solid rgba(178,200,255,.1);vertical-align:top;font-weight:300}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:500;white-space:nowrap}
+td .hz{display:block;font-size:12px;color:var(--muted);font-weight:300;font-variant-numeric:tabular-nums}
+.sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:10px;vertical-align:1px;box-shadow:0 0 10px currentColor}
+
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.mode{display:flex;flex-direction:column;gap:16px}
+.mode .badge{font-weight:300;font-size:2.2rem;line-height:1;letter-spacing:-.02em}
+.mode.vr{background:linear-gradient(160deg, rgba(60,100,230,.45), rgba(20,40,120,.2) 70%)}
+.mode p{color:var(--muted);font-weight:300}
+.mode dl{margin:0;display:grid;grid-template-columns:5.5em 1fr;gap:10px 12px;font-size:14px;padding-top:16px;border-top:1px solid var(--edge)}
+.mode dt{color:var(--muted)}
+.mode dd{margin:0;font-weight:300}
+
+/* periwinkle band */
+.band{margin-top:96px;border-radius:28px;padding:clamp(40px,6vw,72px) clamp(20px,4vw,48px);
+  background:radial-gradient(80% 90% at 20% 0%, #c9d9ff 0%, #9cb7f5 45%, #6f93ea 100%);color:var(--navy-ink)}
+.band section{padding:0}
+.band h2{color:var(--navy-ink)}
+.band h2 em{color:#1f47b8}
+.band .pill{color:var(--navy-ink);background:rgba(255,255,255,.4);border-color:rgba(7,17,46,.15)}
+.band .pill::before{background:#1f47b8;box-shadow:none}
+.scenes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.scene{border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:6px;min-width:0;background:linear-gradient(165deg,#0c1942,#060c24);color:var(--fg);
+  border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 40px rgba(20,40,120,.25)}
+.scene .when{font-size:12px;color:var(--blue);font-variant-numeric:tabular-nums}
+.scene p{color:var(--muted);font-size:15px;font-weight:300}
+
+.safety{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.safety .card{display:flex;flex-direction:column;gap:4px}
+.safety .ico{width:34px;height:34px;border-radius:50%;border:1px solid var(--edge-2);display:grid;place-items:center;margin-bottom:12px;background:var(--glass-2)}
+.safety .ico i{width:8px;height:8px;border-radius:50%;background:var(--ice);box-shadow:0 0 12px var(--blue)}
+.safety p{color:var(--muted);font-size:15px;font-weight:300}
+
+.party{margin-top:12px;padding:18px 20px;border-radius:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);gap:16px 24px;align-items:center}
+@media (max-width:860px){.party{grid-template-columns:1fr}}
+.party .code{display:flex;flex-direction:column;gap:6px;min-width:0}
+.party .code b{font-weight:300;font-size:1.9rem;letter-spacing:.06em;line-height:1.1}
+.party .code .lnk{font-size:12px;color:var(--muted);word-break:break-all}
+.party .code .btn{align-self:flex-start;padding:6px 14px;font-size:13px}
+.friends{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.friends li{display:flex;align-items:center;gap:10px;font-size:14px}
+.friends .av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 11px/1 var(--kr);color:var(--navy-ink);background:hsl(var(--h),90%,72%);box-shadow:0 0 12px hsla(var(--h),90%,65%,.6);flex:none}
+.friends .nm{font-weight:500;min-width:2.6em}
+.friends .st{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.friends .st.on{color:var(--ice)}
+.party .act{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.party .act p{font-size:13px;color:var(--muted)}
+.btn-ice:disabled{opacity:.45;cursor:not-allowed}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:14px}
+.feat .card{display:flex;flex-direction:column;gap:4px}
+.feat p{color:var(--muted);font-size:15px;font-weight:300}
+footer{margin-top:96px;padding:20px 24px;border-radius:999px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;align-items:center}
+footer .logo{font-size:14px;color:var(--fg)}
+@media (max-width:640px){footer{border-radius:20px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="nav glass" aria-label="페이지 목차">
+    <div class="logo">ON<span>BEAT</span></div>
+    <ul>
+      <li><a href="#demo">데모</a></li>
+      <li><a href="#how">작동 방식</a></li>
+      <li><a href="#map">변환 규칙</a></li>
+      <li><a href="#modes">모드</a></li>
+      <li><a href="#together">함께</a></li>
+      <li><a href="#safety">안전</a></li>
+    </ul>
+  </nav>
+
+  <header class="hero">
+    <div class="eclipse" aria-hidden="true"></div>
+    <span class="pill">AR · VR 음악 시각화 서비스</span>
+    <h1>이어폰 속 노래가,<br><em>눈앞의 무대</em>가 됩니다</h1>
+    <p class="lede">온비트는 지금 듣는 음악을 실시간으로 분석해 <strong>AR 글라스와 VR 화면 위에 빛, 파동, 입자로 그려 주는 서비스</strong>입니다. 클럽에 가지 않아도, 퇴근길 골목에서 비트에 맞춰 춤출 수 있게.</p>
+    <div class="hero-cta">
+      <a class="btn-ice" href="#demo">▶ 데모 체험하기</a>
+      <a class="btn-ghost" href="#how">어떻게 작동하나요</a>
+    </div>
+    <span class="wordmark" aria-hidden="true">OnBeat</span>
+  </header>
+
+  <div class="stats">
+    <div class="stat glass"><b>12</b><span>실시간으로 읽는 주파수 대역</span></div>
+    <div class="stat glass"><b>7</b><span>소리를 빛으로 바꾸는 규칙</span></div>
+    <div class="stat glass"><b>×2</b><span>모드 · 걸을 땐 AR, 머물 땐 VR</span></div>
+    <div class="stat glass"><b>≤3</b><span>1초당 번쩍임 상한 · 눈 보호</span></div>
+  </div>
+
+  <div class="demo" id="demo">
+    <div class="demo-head">
+      <div class="sec-head" style="margin:0">
+        <span class="pill">라이브 데모</span>
+        <h2>AR 글라스를 쓰고 <em>밤거리</em>를 걸어 보세요</h2>
+      </div>
+      <p>장르를 고르면 그 음악을 실제로 분석해서 반응해요. ‘효과 끄기’로 평소 거리와 비교할 수 있어요.</p>
+    </div>
+    <div class="stage-wrap">
+      <canvas id="stage" role="img" aria-label="AR 글라스를 쓰고 밤거리를 걷는 시점의 시뮬레이션. 음악에 맞춰 바닥의 파동, 건물 창문 이퀄라이저, 빛 리본과 입자가 움직입니다."></canvas>
+      <button id="bigPlay" class="big-play" type="button">▶ 재생하고 걸어 보기<small>소리가 나요 · 데모 비트 재생</small></button>
+    </div>
+
+    <div class="controls glass">
+      <div class="group" role="group" aria-labelledby="lbl-music">
+        <span class="glabel" id="lbl-music">음악</span>
+        <div class="chips">
+          <button type="button" class="chip" data-preset="pop" aria-pressed="true">신나는 팝 <i>124 BPM</i></button>
+          <button type="button" class="chip" data-preset="hiphop" aria-pressed="false">힙합 <i>90 BPM</i></button>
+          <button type="button" class="chip" data-preset="lofi" aria-pressed="false">로파이 <i>76 BPM</i></button>
+          <button type="button" class="chip" data-preset="edm" aria-pressed="false">EDM <i>128 BPM</i></button>
+          <label class="chip file" id="fileLabel" aria-pressed="false">내 음악 파일 올리기<input type="file" id="fileIn" accept="audio/*" class="sr-only"></label>
+        </div>
+      </div>
+      <div class="group" role="group" aria-labelledby="lbl-view">
+        <span class="glabel" id="lbl-view">보기 방식</span>
+        <div class="seg">
+          <label><input type="radio" name="mode" id="m-off" value="off">효과 끄기</label>
+          <label><input type="radio" name="mode" id="m-ar" value="ar" checked>AR 글라스</label>
+        </div>
+      </div>
+      <div class="group">
+        <span class="glabel">재생</span>
+        <div class="row">
+          <button type="button" class="btn" id="playBtn">재생</button>
+          <label class="check"><input type="checkbox" id="safeChk" checked>보행 안전 구역 표시</label>
+        </div>
+      </div>
+      <div class="group">
+        <span class="glabel">함께 보기</span>
+        <div class="row"><button type="button" class="btn" id="partyBtn" aria-pressed="false">친구 초대하기</button></div>
+      </div>
+    </div>
+    <div class="party glass" id="partyPanel" hidden>
+      <div class="code">
+        <span class="glabel">초대 코드</span>
+        <b>BEAT-7429</b>
+        <span class="lnk">예시 링크 · <span id="inviteLink">onbeat.app/join/BEAT-7429</span></span>
+        <button type="button" class="btn" id="copyBtn">링크 복사</button>
+      </div>
+      <ul class="friends" id="friendList" aria-live="polite"></ul>
+      <div class="act">
+        <button type="button" class="btn-ice" id="jumpBtn" disabled>다 같이 점프</button>
+        <p id="syncInfo">친구가 들어오면 같은 박자로 맞춰져요</p>
+        <p>친구는 데모용 가상 인물이에요.</p>
+      </div>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <p class="demo-note">올린 음악 파일은 이 브라우저 안에서만 재생되고 어디에도 업로드되지 않아요.</p>
+  </div>
+
+  <section id="why">
+    <div class="sec-head">
+      <span class="pill">왜 필요한가</span>
+      <h2>좋아하는 노래는 어디서나 나오는데, <em>무대는 클럽에만</em> 있어요</h2>
+    </div>
+    <div class="why">
+      <div class="card glass"><span class="k">문제</span><h3>신나는 순간은 장소를 가리지 않아요</h3><p>길을 걷다 좋아하는 노래가 나오면 몸이 먼저 반응해요. 그런데 눈앞의 거리는 그대로 회색이라 흥이 금방 식어요.</p></div>
+      <div class="card glass"><span class="k">문턱</span><h3>클럽 조명은 멀고, 비싸고, 부담스러워요</h3><p>화려한 조명과 무대 연출을 즐기려면 시간, 돈, 분위기를 맞춰야 해요. 매일 누리기는 어렵죠.</p></div>
+      <div class="card glass"><span class="k">해결</span><h3>무대 연출을 내 시야로 가져와요</h3><p>음악이 곧 조명 감독이 됩니다. 내 글라스 안에서만 펼쳐지는 나만의 무대라서, 어디서든 부담 없이 즐길 수 있어요.</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="sec-head">
+      <span class="pill">작동 방식</span>
+      <h2>듣고, 분석하고, 그리고, <em>공간에 붙입니다</em></h2>
+    </div>
+    <ol class="steps">
+      <li class="card glass"><span class="n"><b>1</b>듣기</span><h3>지금 재생 중인 곡을 받아요</h3><p>스마트폰 음악 앱과 연동하거나, 글라스 마이크로 주변에서 들리는 음악을 받아요.</p></li>
+      <li class="card glass"><span class="n"><b>2</b>분석</span><h3>소리를 숫자로 쪼개요</h3><p>BPM, 저음·중음·고음의 세기, 드럼이 치는 순간, 곡의 밝고 어두운 분위기를 실시간으로 읽어요.</p></li>
+      <li class="card glass"><span class="n"><b>3</b>연출</span><h3>소리마다 정해진 빛을 만들어요</h3><p>킥 드럼은 파동, 하이햇은 입자, 멜로디는 빛 리본처럼 소리 요소와 시각 요소를 짝지어 그려요.</p></li>
+      <li class="card glass"><span class="n"><b>4</b>배치</span><h3>진짜 공간에 붙여요</h3><p>AR은 공간 인식으로 바닥, 벽, 하늘에 효과를 붙이고, VR은 주변 공간 전체를 음악의 세계로 바꿔요.</p></li>
+    </ol>
+  </section>
+
+  <section id="map">
+    <div class="sec-head">
+      <span class="pill">소리 → 빛 변환 규칙</span>
+      <h2>어떤 소리가 <em>어떤 빛</em>이 되나요</h2>
+    </div>
+    <div class="tbl glass">
+      <table>
+        <thead><tr><th>소리 요소</th><th>읽어 내는 값</th><th>눈에 보이는 것</th></tr></thead>
+        <tbody>
+          <tr><td>킥 드럼<span class="hz">저음 20–150 Hz</span></td><td>드럼이 치는 순간</td><td><span class="sw" style="color:#7ea6ff;background:#7ea6ff"></span>발밑에서 퍼져 나가는 파동 링, 걸음 흔들림</td></tr>
+          <tr><td>스네어 · 박수<span class="hz">1.5–4 kHz</span></td><td>치는 순간</td><td><span class="sw" style="color:#d3e2ff;background:#d3e2ff"></span>시야 가장자리가 은은하게 빛남</td></tr>
+          <tr><td>하이햇 · 고음<span class="hz">5–12 kHz</span></td><td>에너지 크기</td><td><span class="sw" style="color:#9fd8ff;background:#9fd8ff"></span>바닥에서 떠오르는 빛 입자</td></tr>
+          <tr><td>멜로디 · 보컬<span class="hz">300 Hz–2 kHz</span></td><td>에너지 크기</td><td><span class="sw" style="color:#a99bff;background:#a99bff"></span>공중을 흐르는 빛 리본, 크게 부를수록 크게 출렁임</td></tr>
+          <tr><td>전체 주파수<span class="hz">12개 대역</span></td><td>대역별 크기</td><td><span class="sw" style="color:#7ea6ff;background:#7ea6ff"></span>건물 창문이 이퀄라이저처럼 켜졌다 꺼짐</td></tr>
+          <tr><td>템포<span class="hz">BPM</span></td><td>박자 속도</td><td><span class="sw" style="color:#d3e2ff;background:#d3e2ff"></span>모든 효과가 움직이는 박자</td></tr>
+          <tr><td>분위기<span class="hz">장조 · 단조 · 음색</span></td><td>밝기와 색온도</td><td><span class="sw" style="color:#9fd8ff;background:#9fd8ff"></span>팔레트의 톤 (팝은 맑은 블루, 힙합은 인디고, 로파이는 청록)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="modes">
+    <div class="sec-head">
+      <span class="pill">AR 글라스 모드</span>
+      <h2>진짜 거리 위에 <em>빛을 겹쳐요</em></h2>
+    </div>
+    <div class="modes">
+      <div class="card glass mode ar">
+        <span class="badge">AR Glass</span>
+        <p>실제 거리가 그대로 보이고, 그 위에 효과가 겹쳐져요.</p>
+        <dl>
+          <dt>보이는 것</dt><dd>진짜 거리 + 바닥 파동, 창문 이퀄라이저, 빛 입자</dd>
+          <dt>쓰는 곳</dt><dd>출퇴근길, 산책로, 친구와 걷는 골목</dd>
+          <dt>움직임</dt><dd>걸으면서, 가볍게 리듬 타며</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="together">
+    <div class="sec-head">
+      <span class="pill">친구와 함께</span>
+      <h2>같은 곡, 같은 박자, <em>같은 무대</em></h2>
+    </div>
+    <ol class="steps">
+      <li class="card glass"><span class="n"><b>1</b>초대</span><h3>코드나 링크를 보내요</h3><p>옆에 있는 친구라면 글라스끼리 가까이 대기만 해도 바로 연결돼요.</p></li>
+      <li class="card glass"><span class="n"><b>2</b>합류</span><h3>같은 지점부터 같이 들어요</h3><p>친구 글라스가 내 곡과 재생 위치를 받아와서, 모두 같은 소절부터 함께 들어요.</p></li>
+      <li class="card glass"><span class="n"><b>3</b>동기화</span><h3>박자 시계를 하나로 맞춰요</h3><p>모두가 같은 박자 시계를 공유해서, 킥이 치는 순간 모두의 발밑 파동이 동시에 퍼져요.</p></li>
+    </ol>
+    <div class="feat">
+      <div class="card glass"><h3>친구 발밑의 빛</h3><p>친구마다 고유한 색의 빛이 발밑에서 박자에 맞춰 함께 뛰어요.</p></div>
+      <div class="card glass"><h3>박자 신호 줄</h3><p>킥이 칠 때마다 나에게서 친구에게로 빛 신호가 흘러가요. 연결돼 있다는 게 눈에 보여요.</p></div>
+      <div class="card glass"><h3>다 같이 점프</h3><p>한 명이 누르면 모두의 화면에 큰 파동과 빛 입자가 동시에 터져요.</p></div>
+      <div class="card glass"><h3>이름표와 지연 시간</h3><p>누가 함께인지, 박자가 얼마나 잘 맞는지 머리 위 이름표로 보여 줘요.</p></div>
+    </div>
+  </section>
+
+  <div class="band">
+    <section id="scenes">
+      <div class="sec-head">
+        <span class="pill">이런 순간에</span>
+        <h2>평범한 하루의 틈이 <em>무대</em>가 돼요</h2>
+      </div>
+      <div class="scenes">
+        <div class="scene"><span class="when">오후 7:40 · 퇴근길 골목</span><h3>지친 발걸음에 리듬을</h3><p>좋아하는 곡을 틀면 가로등과 창문이 박자에 맞춰 빛나요. 걸음이 저절로 가벼워져요.</p></div>
+        <div class="scene"><span class="when">토요일 오후 · 한강 산책로</span><h3>산책이 뮤직비디오처럼</h3><p>빛 리본이 하늘을 흘러요. 잔잔한 곡엔 잔잔하게, 신나는 곡엔 크게.</p></div>
+        <div class="scene"><span class="when">금요일 밤 · 친구 셋이서</span><h3>같은 곡, 같은 무대</h3><p>공유 모드를 켜면 같은 노래를 듣는 친구들 글라스에 같은 연출이 보여요. 길 위의 작은 파티.</p></div>
+        <div class="scene"><span class="when">주말 저녁 · 거리 버스킹</span><h3>관객 모두의 조명</h3><p>버스커의 음악을 분석해 관객들 글라스에 같은 무대 조명을 띄워요. 장비가 없어도 돼요.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <section id="safety">
+    <div class="sec-head">
+      <span class="pill">거리에서 쓰는 서비스라서</span>
+      <h2>신나게, 하지만 <em>안전하게</em></h2>
+    </div>
+    <div class="safety">
+      <div class="card glass"><span class="ico"><i></i></span><h3>걷는 방향 시야는 비워 둬요</h3><p>효과는 하늘, 건물 벽, 시야 가장자리에 두고 걷는 방향 가운데는 흐리게 처리해요. 데모의 점선 구역이 그 영역이에요.</p></div>
+      <div class="card glass"><span class="ico"><i></i></span><h3>위험한 곳에선 자동으로 줄여요</h3><p>횡단보도, 차도 가까이, 계단, 붐비는 곳을 인식하면 효과를 즉시 약하게 하거나 꺼요.</p></div>
+      <div class="card glass"><span class="ico"><i></i></span><h3>나에게만 보여요</h3><p>효과는 내 글라스에만 나타나서 다른 사람을 방해하지 않아요. 친구와 공유는 직접 켰을 때만 돼요.</p></div>
+      <div class="card glass"><span class="ico"><i></i></span><h3>눈이 편한 밝기와 깜빡임</h3><p>번쩍임은 1초에 3번 이하, 밝기에도 상한을 둬서 빛에 민감한 사람도 편하게 쓸 수 있게 해요.</p></div>
+    </div>
+  </section>
+
+  <footer class="glass">
+    <span class="logo">ON<span style="color:var(--blue);font-weight:300">BEAT</span> 온비트</span>
+    <span>데모 음악은 브라우저에서 직접 합성한 비트이고, 화면은 AR 글라스 시점을 흉내 낸 시뮬레이션입니다.</span>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
