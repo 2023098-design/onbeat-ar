@@ -768,7 +768,7 @@ function drawHUD(){
   }
   const p = PRESETS[S.preset];
   // top-left: mode + track
-  const modeLbl = S.mode==='ar' ? 'AR Glass · 실시간 분석' : S.mode==='vr' ? 'VR · 제자리 몰입 모드' : '효과 꺼짐 · 평소의 밤길';
+  const modeLbl = S.mode==='ar' ? 'AR · 실시간 분석' : S.mode==='vr' ? 'VR · 제자리 몰입 모드' : '효과 꺼짐 · 평소의 거리';
   const track = !S.playing ? '대기 중 · 재생을 눌러 보세요' : S.source==='file' ? S.fileName : p.name + ' 데모 비트';
   g.font = font(15, 500);
   let tr = track; const maxW = W*0.42; while (g.measureText(tr).width > maxW && tr.length > 4) tr = tr.slice(0,-2);
